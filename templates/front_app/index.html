@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number verification service</title>
+    <link rel="icon" type="image/x-icon" href="https://icons8.com/icon/8U0YyPNowmTt/phone">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="mt-5">Number verification service</h1>
+                <p class="lead">This is a service that allows you to determine the telecom operator and region by phone number.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <form id="phoneForm">
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number in MSISDN format:</label>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber"
+                               placeholder="79173453223" oninput="validateMSISDN(this.value)">
+                        <small id="phoneHelp" class="form-text text-muted"></small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <p id="submittedNumber" class="mt-4"></p>
+                <p id="operator" class="mt-4"></p>
+                <p id="region" class="mt-4"></p>
+                <p id="error" class="mt-4 text-danger"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function validateMSISDN(phoneNumber) {
+            var regex = /^[1-9]\d{9,14}$/;
+            if (!regex.test(phoneNumber)) {
+                $('#phoneHelp').text('Please enter a valid MSISDN format (10-15 digits, no leading zeros or + sign).');
+                return false;
+            } else {
+                $('#phoneHelp').text('');
+                return true;
+            }
+        }
+        $(document).ready(function(){
+            $('#phoneForm').on('submit', function(e){
+                e.preventDefault();
+                var phoneNumber = $('#phoneNumber').val();
+                if (!validateMSISDN(phoneNumber)) {
+                    alert("Invalid phone number format.");
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/process_cellphone/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ "cellphone": phoneNumber }),
+                    success: function(response) {
+                        $('#submittedNumber').text('Submitted Number: ' + response.cellphone);
+                        $('#operator').text('Operator: ' + response.operator);
+                        $('#region').text('Region: ' + response.region);
+                        $('#error').text('');
+                    },
+                    error: function(xhr, status, error) {
+                        var err = JSON.parse(xhr.responseText);
+                        $('#error').text('Error: ' + err.error + ' - ' + err.detail);
+                        $('#submittedNumber').text('');
+                        $('#operator').text('');
+                        $('#region').text('');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
