@@ -3,8 +3,7 @@ from rest_framework.decorators import api_view
 
 from main_api.utils import (
     is_valid_msisdn,
-    get_cellphone_operator,
-    get_cellphone_region,
+    get_cellphone_operator_and_region,
 )
 
 
@@ -18,8 +17,7 @@ def process_cellphone(request):
         if not is_valid_msisdn(cellphone):
             raise ValueError('Invalid cellphone number')
 
-        operator = get_cellphone_operator(cellphone)
-        region = get_cellphone_region(cellphone)
+        operator, region = get_cellphone_operator_and_region(cellphone)
 
         return JsonResponse(
             {

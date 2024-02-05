@@ -110,7 +110,7 @@ def save_external_data():
     """
     Save the external data to the database.
     """
-    html_data = load_html(os.getenv("PARSER_URL"))
+    html_data = load_html(os.getenv("PARSER_LINK"))
     links_data = find_links(html_data)
     df = get_csv_as_dataframe(links_data)
     save_dataframe_to_database(df)
