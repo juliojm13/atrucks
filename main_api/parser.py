@@ -23,7 +23,7 @@ def find_links(html_content: str) -> list:
     """
 
     # Define the desired prefix for links
-    prefix = os.getenv("PARSER_LINK")
+    prefix = 'https://opendata.digital.gov.ru/'
 
     # Parse the HTML content using BeautifulSoup
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -49,7 +49,7 @@ def load_html(page_url: str) -> str:
     """
 
     # Fetch the page content
-    response = requests.get(page_url)
+    response = requests.get(page_url, verify=False)
     html_content = response.text
 
     return html_content
@@ -78,9 +78,9 @@ def get_csv_as_dataframe(csv_urls: list):
     }
     for csv_url in csv_urls:
         # Load the CSV file
-        response = requests.get(csv_url)
+        response = requests.get(csv_url, verify=False)
         response.raise_for_status()
-        df = pd.read_csv(io.StringIO(response.text))
+        df = pd.read_csv(io.StringIO(response.text), delimiter=';')
 
         # Rename the columns using the provided mapping
         df = df.rename(columns=column_names)
@@ -102,7 +102,7 @@ def save_dataframe_to_database(df: pd.DataFrame, replace=True):
     if replace:
         OpenData.objects.all().delete()
 
-    objects = [OpenData(**row) for index, row in df.iterrows()]
+    objects = [OpenData(**row.to_dict()) for index, row in df.iterrows()]
     OpenData.objects.bulk_create(objects)
 
 
